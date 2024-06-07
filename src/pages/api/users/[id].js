@@ -19,12 +19,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Atualiza o usuário pelo ID
-    const { nome_completo, email, nome_usuario, senha } = req.body;
+    const { nome_completo, email, nome_usuario } = req.body;
 
     try {
       await db.query(
-        'UPDATE usuarios SET nome_completo = ?, email = ?, nome_usuario = ?, senha = ? WHERE id = ?',
-        [nome_completo, email, nome_usuario, senha, id]
+        'UPDATE usuarios SET nome_completo = ?, email = ?, nome_usuario = ? WHERE id = ?',
+        [nome_completo, email, nome_usuario, id]
       );
       res.status(200).json({ message: 'Usuário atualizado com sucesso' });
     } catch (error) {

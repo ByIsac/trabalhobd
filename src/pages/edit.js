@@ -6,6 +6,9 @@ import styles from '../styles/Edit.module.css';
 export default function Edit() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -100,6 +103,39 @@ export default function Edit() {
     setUsers(updatedUsers);
   };
 
+  const openPasswordModal = (user) => {
+    setSelectedUser(user);
+    setShowPasswordModal(true);
+  };
+
+  const closePasswordModal = () => {
+    setSelectedUser(null);
+    setShowPasswordModal(false);
+    setNewPassword('');
+  };
+
+  const handlePasswordChange = async () => {
+    try {
+      const res = await fetch(`/api/users/password/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ senha: newPassword }),
+      });
+      if (res.ok) {
+        alert('Senha alterada com sucesso');
+        closePasswordModal();
+      } else {
+        console.error('Erro ao alterar senha:', res.status);
+        alert('Erro ao alterar senha');
+      }
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error);
+      alert('Erro ao alterar senha');
+    }
+  };
+
   if (loading) {
     return <div>Carregando...</div>;
   }
@@ -114,7 +150,6 @@ export default function Edit() {
             <th>Nome Completo</th>
             <th>Email</th>
             <th>Nome de Usuário</th>
-            <th>CPF</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -158,8 +193,7 @@ export default function Edit() {
                   user.nome_usuario
                 )}
               </td>
-              <td>{user.cpf}</td> {/* Exibição do CPF */}
-              <td>
+              <td className={styles.actions}>
                 {user.editing ? (
                   <button onClick={() => handleSave(user.id)} className={styles.saveButton}>
                     Salvar
@@ -172,6 +206,9 @@ export default function Edit() {
                 <button onClick={() => handleDelete(user.id)} className={styles.deleteButton}>
                   Excluir
                 </button>
+                <button onClick={() => openPasswordModal(user)} className={styles.editButton}>
+                  Mudar Senha
+                </button>
               </td>
             </tr>
           ))}
@@ -180,6 +217,26 @@ export default function Edit() {
       <Link href="/home">
         <button className={styles.button}>Voltar para a Página Inicial</button>
       </Link>
+      
+      {showPasswordModal && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h2>Alterar Senha de {selectedUser.nome_completo}</h2>
+            <input
+              type="password"
+              placeholder="Nova senha"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <button onClick={handlePasswordChange} className={styles.saveButton}>
+              Salvar
+            </button>
+            <button onClick={closePasswordModal} className={styles.button}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
